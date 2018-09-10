@@ -214,17 +214,17 @@ class EnergyMonitor:
 # Displays an error message in the GUI to notify the user.
     def display_error(self, error_message):
         self.status_label.place_forget()
-        self.status_label = tk.Label(self.parent, text=error_message, font=('Calibri', 8))
+        self.status_label = tk.Label(self.parent, text=error_message, font=('Calibri', 12))
         self.status_label.configure(foreground='#ff0000', background='#c6e2ff')
-        self.status_label.place(x=300, y=700)
+        self.status_label.place(x=100, y=700)
         raise ValueError(error_message)
 
 # Displays a status message in the GUI (as opposed to in the console)
     def display_status(self, status):
         self.status_label.place_forget()
-        self.status_label = tk.Label(self.parent, text=status, font=('Calibri', 8))
+        self.status_label = tk.Label(self.parent, text=status, font=('Calibri', 12))
         self.status_label.configure( background='#c6e2ff')
-        self.status_label.place(x=300, y=700)
+        self.status_label.place(x=100, y=700)
 
 # Sets the text to be displayed in the scroll window
     def scroll_text(self, scrtext):
@@ -802,7 +802,6 @@ class EnergyMonitor:
             layout = go.Layout(title='Total ' + self.loaded_fuels[0] + ' usage (kWh)')
         fig = go.Figure(data=[trace], layout=layout)
         plotly.offline.plot(fig, auto_open=True)
-
 
     def distribution_graph_multi(self):
         traces = []

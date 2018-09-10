@@ -101,6 +101,76 @@ class TestBasicLoading(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.gui.load_file(self.working_dir + '\\resources\\suppliers_baddata.csv')
 
+    def test_date_verification(self):
+        print("Testing that entering bad date info raises an error")
+        self.gui.load_file(self.working_dir + '\\resources\\electricity_daily_test_big.csv')
+        print("Testing non-numerical input")
+        with self.assertRaises(ValueError):
+            self.gui.start_day.set("aaaa")
+            self.gui.plot_graph()
+        print("Testing zero date")
+        with self.assertRaises(ValueError):
+            self.gui.start_day.set("0")
+            self.gui.plot_graph()
+        print("Testing negative date")
+        with self.assertRaises(ValueError):
+            self.gui.start_day.set("-1")
+            self.gui.plot_graph()
+        print("Testing invalid date (32)")
+        with self.assertRaises(ValueError):
+            self.gui.start_day.set("32")
+            self.gui.plot_graph()
+        print("Testing invalid month (13)")
+        with self.assertRaises(ValueError):
+            self.gui.start_day.set("1")
+            self.gui.start_month.set("13")
+            self.gui.plot_graph()
+        print("Testing invalid year (10000")
+        with self.assertRaises(ValueError):
+            self.gui.start_month.set("1")
+            self.gui.start_year.set("10000")
+            self.gui.plot_graph()
+        print("Testing invalid date (31st Nov)")
+        with self.assertRaises(ValueError):
+            self.gui.start_day.set("31")
+            self.gui.start_month.set("11")
+            self.gui.start_year.set("1900")
+            self.gui.plot_graph()
+        print("Testing leap year rules (1901 is NOT a leap year)")
+        with self.assertRaises(ValueError):
+            self.gui.start_day.set("29")
+            self.gui.start_month.set("2")
+            self.gui.start_year.set("1901")
+            self.gui.plot_graph()
+        print("Testing leap year rules (1900 is NOT a leap year)")
+        with self.assertRaises(ValueError):
+            self.gui.start_day.set("29")
+            self.gui.start_month.set("2")
+            self.gui.start_year.set("1900")
+            self.gui.plot_graph()
+        print("Testing start date before start of dataset")
+        with self.assertRaises(ValueError):
+            self.gui.start_day.set("1")
+            self.gui.start_month.set("1")
+            self.gui.start_year.set("1899")
+            self.gui.plot_graph()
+        print("Testing end date after of dataset")
+        with self.assertRaises(ValueError):
+            self.gui.start_day.set("1")
+            self.gui.start_month.set("1")
+            self.gui.start_year.set("1999")
+            self.gui.end_day.set("1")
+            self.gui.end_month.set("1")
+            self.gui.end_year.set("2001")
+            self.gui.plot_graph()
+        print("Testing end date before start date")
+        with self.assertRaises(ValueError):
+            self.gui.end_day.set("1")
+            self.gui.end_month.set("1")
+            self.gui.end_year.set("1998")
+            self.gui.plot_graph()
+
+
     def setUp(self):
         self.root = tk.Tk()
         self.gui = EnergyMonitor(self.root)
