@@ -208,7 +208,7 @@ class EnergyMonitor:
         self.end_month_text = tk.Entry(self.parent, textvariable=self.end_month)
         self.start_day_text = tk.Entry(self.parent, textvariable=self.start_day)
         self.end_day_text = tk.Entry(self.parent, textvariable=self.end_day)
-        self.date_label = tk.Label(self.parent, text="Enter start and end dates (ddmmyyyy):")
+        self.date_label = tk.Label(self.parent, text="Enter start and end dates for graphs(dd/mm/yyyy):")
 
 # Displays an error message in the GUI to notify the user.
     def display_error(self, error_message):
@@ -286,7 +286,22 @@ class EnergyMonitor:
             self.btn_graph.place(x=300, y=400, width=80, height=30)
             self.chart_menu.place(x=400, y=400, width=80, height=30)
             self.scope_menu.place(x=500, y=400, width=80, height=30)
-            self.start_year.set((list(self.data_container.keys())[0]).year())
+            start = list(self.data_container.keys())[0]
+            end = list(self.data_container.keys())[len(list(self.data_container.keys())) - 1]
+            self.start_year.set(start.year)
+            self.start_month.set(start.month)
+            self.start_day.set(start.day)
+            self.end_year.set(end.year)
+            self.end_month.set(end.month)
+            self.end_day.set(end.day)
+            self.date_label.place(x=100, y=330)
+            self.date_label.configure(background='#c6e2ff')
+            self.start_year_text.place(x=420, y=330, width=40)
+            self.start_month_text.place(x=400, y=330, width=20)
+            self.start_day_text.place(x=380, y=330, width=20)
+            self.end_year_text.place(x=510, y=330, width=40)
+            self.end_month_text.place(x=490, y=330, width=20)
+            self.end_day_text.place(x=470, y=330, width=20)
         if len(self.loaded_fuels) == 1:
             self.generate_metrics()
         intersection = list(set(self.loaded_ids).intersection(self.loaded_ids_sup)) # Only calculate costs for houses with both supplier and usage data
@@ -295,6 +310,26 @@ class EnergyMonitor:
             self.costs_menu.place(x=600, y=400, width=100, height=30)
         else:
             self.costs_menu.place_forget()
+
+    def get_start(self):
+        day = self.start_day.get()
+        month = self.start_month.get()
+        year = self.start_year.get()
+        date = datetime.date(year, month, day)
+        if date < list(self.data_container.keys())[0]:
+            self.display_error("Start date is before the start of the data set!")
+        return date
+
+    def get_end(self):
+        day = self.end_day.get()
+        month = self.end_month.get()
+        year = self.end_year.get()
+        date = datetime.date(year, month, day)
+        if date > list(self.data_container.keys())[len(list(self.data_container.keys()))-1]:
+            self.display_error("End date is after the end of the data set!")
+        if date < self.get_start():
+            self.display_error("End date is before start date!")
+        return date
 
     def calculate_costs(self, ids):
         self.annual_costs.clear()
@@ -586,6 +621,8 @@ class EnergyMonitor:
         fuels = self.loaded_fuels
         traces = []
         title = ""
+        start = self.get_start()
+        end = self.get_end()
         if self.costs_checked.get() == 'Show costs':
             ids = list(set(self.loaded_ids).intersection(self.loaded_ids_sup))
             title = " Costs (£)"
@@ -600,7 +637,10 @@ class EnergyMonitor:
                 data = self.monthly_data
             else:
                 data = self.data_container
-        date_range = list(data.keys())
+        date_range = []
+        for d in list(data.keys()):
+            if d >= start and d <= end:
+                date_range.append(d)
         if len(fuels) == 1: # Multiple houses
             graph_data = {}
             for house in ids:
@@ -724,6 +764,8 @@ class EnergyMonitor:
 
     def pie_chart(self):
         values = []
+        start = self.get_start()
+        end = self.get_end()
         if self.costs_checked.get() == 'Show costs':
             data = self.annual_costs
             ids = list(set(self.loaded_ids).intersection(self.loaded_ids_sup))
@@ -733,7 +775,8 @@ class EnergyMonitor:
         for i in ids:
             value = 0
             for d in list(data.keys()):
-                value += data[d][i]
+                if d >= start and d <= end:
+                    value += data[d][i]
             values.append(value)
         trace = go.Pie(labels=ids, values=values)
         if self.costs_checked.get() == 1:
