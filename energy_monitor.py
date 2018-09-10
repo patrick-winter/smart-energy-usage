@@ -23,6 +23,7 @@ class FuelType(Enum):
 
 
 MONTHS = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')
+DAYS = (31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
 
 def round_1sf(number):
     return round(number, -int(math.floor(math.log10(number))))
@@ -196,12 +197,12 @@ class EnergyMonitor:
         self.total_mode.set('Show fuels separately')
         self.total_menu.forget()
 
-        self.start_year = IntVar()
-        self.end_year = IntVar()
-        self.start_month = IntVar()
-        self.end_month = IntVar()
-        self.start_day = IntVar()
-        self.end_day = IntVar()
+        self.start_year = StringVar(self.parent)
+        self.end_year = StringVar(self.parent)
+        self.start_month = StringVar(self.parent)
+        self.end_month = StringVar(self.parent)
+        self.start_day = StringVar(self.parent)
+        self.end_day = StringVar(self.parent)
         self.start_year_text = tk.Entry(self.parent, textvariable=self.start_year)
         self.end_year_text = tk.Entry(self.parent, textvariable=self.end_year)
         self.start_month_text = tk.Entry(self.parent, textvariable=self.start_month)
@@ -315,7 +316,7 @@ class EnergyMonitor:
         day = self.start_day.get()
         month = self.start_month.get()
         year = self.start_year.get()
-        date = datetime.date(year, month, day)
+        date = self.validate_date(day, month, year, "start")
         if date < list(self.data_container.keys())[0]:
             self.display_error("Start date is before the start of the data set!")
         return date
@@ -324,12 +325,28 @@ class EnergyMonitor:
         day = self.end_day.get()
         month = self.end_month.get()
         year = self.end_year.get()
-        date = datetime.date(year, month, day)
+        date = self.validate_date(day, month, year, "end")
         if date > list(self.data_container.keys())[len(list(self.data_container.keys()))-1]:
             self.display_error("End date is after the end of the data set!")
         if date < self.get_start():
             self.display_error("End date is before start date!")
         return date
+
+    def validate_date(self, day, month, year, message):
+        if not (is_num(day) and is_num(month) and is_num(year)):
+            self.display_error("All " + message + " date fields must be numbers!")
+        day = int(day)
+        month = int(month)
+        year = int(year)
+        if month < 1 or month > 12:
+            self.display_error("Invalid " + message + " month!")
+        if day > DAYS[month - 1] or (
+                month == 2 and (year % 4 != 0 or (year % 100 == 0 and year % 400 != 0)) and day == 29) or day < 1:
+            self.display_error("Invalid " + message + " day!")
+        if year > 9999 or year < 1:
+            self.display_error("Invalid " + message + " year! (1-9999 accepted)")
+        return datetime.date(year, month, day)
+
 
     def calculate_costs(self, ids):
         self.annual_costs.clear()
