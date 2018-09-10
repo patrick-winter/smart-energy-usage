@@ -1,0 +1,6 @@
+Data Type,HouseC,HouseD,HouseE,HouseF
+Name,MyEnergy UK,Sunshine Power,MyEnergy UK,Hampshire Utilities Company
+Electricity Usage Rate,30.55,24.76,30.55,string
+Electricity Standing Charge,14,11,14,11
+Gas Usage Rate,5.66,string,11,6.51
+Gas Standing Charge,11.5,11.5,12.5,11.5
